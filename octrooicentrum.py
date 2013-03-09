@@ -83,10 +83,10 @@ def parse_hblock4(store, element):
 
     store[name] = value
 
-def parse_basisgegevens(octrooi, contents):
+def get_basisgegevens(contents):
     basisgegevens = contents.find("div", {"id": "sectie-basisgegevens", })
 
-    octrooi.setdefault('basisgegevens', {})
+    data = {}
 
     for element in basisgegevens.contents:
         if type(element) == NavigableString:
@@ -101,10 +101,12 @@ def parse_basisgegevens(octrooi, contents):
             cname = get_i1(element)
             
         if element['class'][0] == 'block-4a':
-            parse_hblock4(octrooi['basisgegevens'], element)
+            parse_hblock4(data, element)
 
         if element['class'][0] == 'block-2a':
-            parse_hblock2(octrooi['basisgegevens'], element, cname)
+            parse_hblock2(data, element, cname)
+
+    return data
 
 def get_element(i):
     element = i.next()
@@ -113,13 +115,13 @@ def get_element(i):
 
     return element
         
-def parse_familievoorrang(octrooi, contents):
+def get_familievoorrang(contents):
     familievoorrang = contents.find("div", {"id": "sectie-familieVoorrang", })
 
     if familievoorrang == None:
         return
 
-    octrooi.setdefault('familievoorrang', [])
+    data = []
 
     i = iter(familievoorrang.contents)
 
@@ -136,25 +138,29 @@ def parse_familievoorrang(octrooi, contents):
                 element = get_element(i)
 
                 parse_hblock4(item, element);
-                octrooi['familievoorrang'].append(item)
+                data.append(item)
     except StopIteration:
         pass
 
-def parse_sectie_ipc(octrooi, contents):
+    return data
+
+def get_sectie_ipc(contents):
     sectie_ipc = contents.find("div", {"id": "sectie-ipc", })
 
     if sectie_ipc == None:
         return
 
-    octrooi.setdefault('sectie_ipc', {})
+    data = {}
 
     for element in sectie_ipc:
         if type(element) == NavigableString:
             continue
         if element['class'][0] == 'block-2a':
-            parse_hblock2(octrooi['sectie_ipc'], element)
+            parse_hblock2(data, element)
 
-def parse_sectie_gemachtigdeDomicilie(octrooi, contents):
+    return data
+
+def get_gemachtigden(contents):
     domicilie = contents.find("div", {"id": "sectie-gemachtigdeDomicilie", })
 
     if domicilie == None:
@@ -178,13 +184,12 @@ def parse_sectie_gemachtigdeDomicilie(octrooi, contents):
         if get_i1(element) == "":
             cgemachtigde['Adres'].append(get_i2(element))
 
-    octrooi['gemachtigden'] = gemachtigden
+    return gemachtigden
 
-
-def parse_aanvrager_houder(octrooi, contents):
+def get_aanvrager_houder(contents):
     aanvrager_houder = contents.find("div", {"id": "sectie-aanvragerHouder", })
 
-    octrooi.setdefault('aanvraaghouder', {})
+    data = {}
 
     clabel = ""
     parsing_address = False
@@ -207,39 +212,43 @@ def parse_aanvrager_houder(octrooi, contents):
         if get_i1(element) == "Naam":
             address_line = 0
             name = get_i2(element)
-            octrooi['aanvraaghouder'].setdefault(clabel, {})
-            octrooi['aanvraaghouder'][clabel].setdefault('name', [])
-            octrooi['aanvraaghouder'][clabel]['name'].append(name)
+            data.setdefault(clabel, {})
+            data[clabel].setdefault('name', [])
+            data[clabel]['name'].append(name)
 
         if address_line == 1:
             street = get_i2(element)
             address_line = 2
-            octrooi['aanvraaghouder'].setdefault(clabel, {})
-            octrooi['aanvraaghouder'][clabel]['street'] = street
+            data.setdefault(clabel, {})
+            data[clabel]['street'] = street
             continue
         if address_line == 2:
             postal = get_i2(element)
-            octrooi['aanvraaghouder'][clabel]['postal'] = postal
+            data[clabel]['postal'] = postal
             address_line = 3
             continue
         if address_line == 3:
             country = get_i2(element)
-            octrooi['aanvraaghouder'][clabel]['country'] = country
+            data[clabel]['country'] = country
             address_line = 0
             continue
 
-def parse_page(octrooi, data):
+    return data
+
+def get_octrooi(data):
     b = BeautifulSoup(data)
 
     contents = b.find("div", {"id": "contents", })
 
-    parse_basisgegevens(octrooi, contents)
-    parse_familievoorrang(octrooi, contents)
-    parse_sectie_ipc(octrooi, contents)
-    parse_aanvrager_houder(octrooi, contents)
-    parse_sectie_gemachtigdeDomicilie(octrooi, contents)
+    return {
+        'gemachtigden': get_gemachtigden(contents),
+        'basisgegevens': get_basisgegevens(contents),
+        'familie': get_familievoorrang(contents),
+        'ipc': get_sectie_ipc(contents),
+        'aanvrager_houder': get_aanvrager_houder(contents),
+    }
 
-def get_patent(patent_number, ipc_klasse):
+def get_page(patent_number, ipc_klasse):
     br = mechanize.Browser()
     # Fuck robots.txt. Yes, we're fuckin' rebels.
     br.set_handle_robots(False)
@@ -289,23 +298,19 @@ if __name__ == "__main__":
 #        number = int(sh.row_values(rownum)[1])
 #        ipc_klasse = sh.row_values(rownum)[4]
 #
-#        octrooi = {}
-#
 #        print "Retrieving patent: %d" % (number, )
-#        data = get_patent(number, ipc_klasse)
+#        data = get_page(number, ipc_klasse)
 #        if (data == False):
 #            sys.exit("Couldn't retrieve octrooi number: %d" %( number, ))
 #
-#        parse_page(octrooi, data)
+#        octrooi = get_octrooi(data)
 #
 #        pprint(octrooi)
-
-    octrooi = {}
 
     url = 'http://register.octrooicentrum.nl/register/gegevens/EPNL/90914108E'
     url = 'http://register.octrooicentrum.nl/register/gegevens/EPNL/89306425E'
     data = urllib2.urlopen(url).read()
-    parse_page(octrooi, data)
+    octrooi = get_octrooi(data)
     pprint(octrooi)
 
 
