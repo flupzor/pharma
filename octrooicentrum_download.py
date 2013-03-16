@@ -49,8 +49,7 @@ def get_page(patent_number, ipc_klasse):
     data = resp.read()
 
     if data.find("Er zijn 0 resultaten gevonden.") > -1:
-        print "No results"
-        return False
+        return { 'url': br.geturl(), 'data': '', 'error': "No results"}
 
     if data.find("Ter voorkoming van het benaderen van deze site door geautomatiseerde 'robots' vragen wij u de tekst in onderstaande afbeelding over te nemen in de tekstbox.") > -1:
         print "Robot check"
