@@ -24,6 +24,8 @@ import xlrd
 import mechanize
 import sys
 import time
+import os
+import json
 
 SEARCH_FORM = "http://register.octrooicentrum.nl/register/zoekformulier"
 
@@ -248,69 +250,23 @@ def get_octrooi(data):
         'aanvrager_houder': get_aanvrager_houder(contents),
     }
 
-def get_page(patent_number, ipc_klasse):
-    br = mechanize.Browser()
-    # Fuck robots.txt. Yes, we're fuckin' rebels.
-    br.set_handle_robots(False)
-
-    # Today, we will be a linux system running firefox.
-    br.addheaders = [('User-agent', 'Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.1) Gecko/2008071615 Fedora/3.0.1-1.fc9 Firefox/3.0.1')]
-
-    resp = br.open(SEARCH_FORM)
-
-    br.select_form("searchForm")
-
-    br["qc_nummer"] = "%d" % ( patent_number, )
-    br["qc_ipcklasse"] = ipc_klasse
-
-    resp = br.submit()
-    data = resp.read()
-
-    print br.geturl()
-
-    if data.find("Er zijn 0 resultaten gevonden.") > -1:
-        print "No results"
-        return False
-
-    if data.find("Ter voorkoming van het benaderen van deze site door geautomatiseerde 'robots' vragen wij u de tekst in onderstaande afbeelding over te nemen in de tekstbox.") > -1:
-        print "Robot check"
-        return False
-
-    return data
-
 def print_usage():
-    sys.exit("Usage: %s file" % (sys.argv[0], ))
+    sys.exit("Usage: %s dir" % (sys.argv[0], ))
 
 if __name__ == "__main__":
-#    if (len(sys.argv) <= 1):
-#        print_usage()
-#        # NOTREACHED
-#
-#    excel_file = sys.argv[1]
-#
-#    wb = xlrd.open_workbook(excel_file)
-#    sh = wb.sheet_by_index(0)
-#
-#    limit = sh.nrows
-#    limit = 90
-#    for rownum in range(1, limit):
-#        time.sleep(2)
-#        number = int(sh.row_values(rownum)[1])
-#        ipc_klasse = sh.row_values(rownum)[4]
-#
-#        print "Retrieving patent: %d" % (number, )
-#        data = get_page(number, ipc_klasse)
-#        if (data == False):
-#            sys.exit("Couldn't retrieve octrooi number: %d" %( number, ))
-#
-#        octrooi = get_octrooi(data)
-#
-#        pprint(octrooi)
+    if (len(sys.argv) <= 1):
+        print_usage()
+        # NOTREACHED
 
-    url = 'http://register.octrooicentrum.nl/register/gegevens/EPNL/90914108E'
-    url = 'http://register.octrooicentrum.nl/register/gegevens/EPNL/89306425E'
-    data = urllib2.urlopen(url).read()
-    octrooi = get_octrooi(data)
-    pprint(octrooi)
+    octrooi_dir = sys.argv[1]
 
+    for filename in os.listdir(octrooi_dir):
+        if not filename.endswith('.json'):
+            continue
 
+        filedescr = open(os.path.join(octrooi_dir, filename), 'r')
+        file_data = filedescr.read()
+        data = json.loads(file_data)['data']
+
+        octrooi = get_octrooi(data)
+        pprint(octrooi)
