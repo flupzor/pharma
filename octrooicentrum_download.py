@@ -72,7 +72,7 @@ if __name__ == "__main__":
 
     limit = sh.nrows
     for rownum in range(1, limit):
-        time.sleep(5)
+        time.sleep(10)
         number = int(sh.row_values(rownum)[1])
         ipc_klasse = sh.row_values(rownum)[4]
 
