@@ -16,18 +16,12 @@
 
 # Got a lot of inspiration from cbpscraper.py by Floor Terra
 
-import urllib2
 from bs4 import BeautifulSoup
 from bs4 import NavigableString
 from pprint import pprint
-import xlrd
-import mechanize
 import sys
-import time
 import os
 import json
-
-SEARCH_FORM = "http://register.octrooicentrum.nl/register/zoekformulier"
 
 def get_text(tag):
     s = ""
