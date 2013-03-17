@@ -272,7 +272,12 @@ if __name__ == "__main__":
 
         filedescr = open(os.path.join(octrooi_dir, filename), 'r')
         file_data = filedescr.read()
-        data = json.loads(file_data)['data']
+        json_data = json.loads(file_data)
+        html_data = json_data['data'] 
+
+        if 'error' in json_data:
+            print json_data['error']
+            continue
 
         octrooi = get_octrooi(data)
         pprint(octrooi)
