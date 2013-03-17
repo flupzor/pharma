@@ -167,11 +167,23 @@ def get_gemachtigden(contents):
     for element in domicilie:
         if type(element) == NavigableString:
             continue
-        if get_i2(element) == "Buitenlandse Gemachtigde" or get_i2(element) == "Voorlopige Domiciliehouder":
-            gemachtigde = {'Adres': [], 'van': get_i3(element), 'tot': get_i4(element), 'soort': get_i2(element) }
-            gemachtigden.append(gemachtigde)
-            cgemachtigde = gemachtigde
-            continue
+        known_gemachtigden = [
+            "Domiciliehouder",
+            "Gemachtigde",
+            "Buitenlandse Gemachtigde",
+            "Voorlopige Domiciliehouder",
+        ]
+        if get_i2(element) in known_gemachtigden:
+            if element['class'][0] == 'block-2c':
+                gemachtigde = {'Adres': [], 'soort': get_i2(element) }
+                gemachtigden.append(gemachtigde)
+                cgemachtigde = gemachtigde
+                continue
+            elif element['class'][0] == 'block-4c':
+                gemachtigde = {'Adres': [], 'van': get_i3(element), 'tot': get_i4(element), 'soort': get_i2(element) }
+                gemachtigden.append(gemachtigde)
+                cgemachtigde = gemachtigde
+                continue
 
         if get_i1(element) == "Naam":
             cgemachtigde['Naam'] = get_i2(element)
