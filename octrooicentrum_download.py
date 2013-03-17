@@ -60,7 +60,7 @@ def print_usage():
     sys.exit("Usage: %s file" % (sys.argv[0], ))
 
 if __name__ == "__main__":
-    if (len(sys.argv) <= 1):
+    if len(sys.argv) <= 1:
         print_usage()
         # NOTREACHED
 
