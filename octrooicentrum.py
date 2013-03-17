@@ -279,5 +279,6 @@ if __name__ == "__main__":
             print json_data['error']
             continue
 
-        octrooi = get_octrooi(data)
+        print "Processing: %s url: %s" % (filename, json_data['url'])
+        octrooi = get_octrooi(html_data)
         pprint(octrooi)
