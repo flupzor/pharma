@@ -43,10 +43,7 @@ class HTTPSConnectionWithLowEncryption(httplib.HTTPSConnection):
             self._tunnel()
         self.sock = ssl.wrap_socket(sock, self.key_file, self.cert_file, ciphers="LOW")
 
-def get_patent(patent_number):
-    # https://register.epo.org/espacenet/download?number=EP12196108&tab=main&xml=st36
-    conn = HTTPSConnectionWithLowEncryption("register.epo.org")
-
+def get_patent(conn, patent_number):
     conn.request("GET", "/espacenet/download?number=%s&tab=main&xml=st36" % (patent_number, ))
 
     response = conn.getresponse()
@@ -71,6 +68,8 @@ if __name__ == "__main__":
 
     file_descr = open(json_filename, 'r')
     patent_numbers = json.loads(file_descr.read())
+
+    conn = HTTPSConnectionWithLowEncryption("register.epo.org")
 
     start_time = time.time()
     bytes_recv = 0
@@ -102,7 +101,7 @@ if __name__ == "__main__":
             pass
 
         patent_descr = open(path, "w")
-        patent_data = get_patent(patent)
+        patent_data = get_patent(conn, patent)
         patent_size = len(patent_data)
 
         total_patents_recv += 1
