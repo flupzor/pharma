@@ -73,10 +73,10 @@ if __name__ == "__main__":
     patent_numbers = json.loads(file_descr.read())
 
     start_time = time.time()
-    bytes_recv = 0.0
-    total_expected_bytes = 0.0
-    total_patents_recv = 0.0
-    avg_patent_size = 0.0
+    bytes_recv = 0
+    total_expected_bytes = 0
+    total_patents_recv = 0
+    avg_patent_size = 0
     total_number_of_patents = len(patent_numbers)
 
     for patent in patent_numbers:
