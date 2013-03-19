@@ -122,6 +122,6 @@ if __name__ == "__main__":
         if stop_requested:
             sys.exit("Process interruption requested by the user")
 
-        time.sleep(0.2) # sleep 200ms
+        time.sleep(1) # 1 second
 
 
