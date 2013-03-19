@@ -74,6 +74,7 @@ if __name__ == "__main__":
 
     start_time = time.time()
     bytes_recv = 0
+    session_bytes_recv = 0
     total_expected_bytes = 0
     total_patents_recv = 0
     avg_patent_size = 0
@@ -105,9 +106,10 @@ if __name__ == "__main__":
         patent_size = len(patent_data)
 
         total_patents_recv += 1
+        session_bytes_recv += patent_size
         bytes_recv += patent_size
 
-        bytes_per_sec = bytes_recv / running_time 
+        bytes_per_sec = session_bytes_recv / running_time 
 
         avg_patent_size = bytes_recv / total_patents_recv
 
