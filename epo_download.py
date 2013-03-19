@@ -113,12 +113,14 @@ if __name__ == "__main__":
         avg_patent_size = bytes_recv / total_patents_recv
 
         total_expected_bytes = avg_patent_size * total_number_of_patents
+        expected_bytes_left = total_expected_bytes - bytes_recv
 
-        print "%f%% kbps: %d, total hours: %d" % (bytes_recv /
-            total_expected_bytes * 100, bytes_per_sec/1024, 1/bytes_per_sec *
-            total_expected_bytes / 60**2 )
+        print "%f%% size: %d kbps: %d, time remaining in hours: %d" % (bytes_recv /
+            total_expected_bytes * 100, patent_size, bytes_per_sec/1024, 1/bytes_per_sec *
+            expected_bytes_left / 60**2 )
 
         patent_descr.write(patent_data)
+        patent_descr.close()
 
         if stop_requested:
             sys.exit("Process interruption requested by the user")
